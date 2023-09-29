@@ -1,11 +1,14 @@
 package com.sk.userdatabase.service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.sk.userdatabase.entity.UserEntity;
 import com.sk.userdatabase.model.User;
@@ -18,61 +21,62 @@ public class UserService {
     UserRepository userRepository;
 
     // getAllUsers
-    public List<User> getAllUsers() {
-
+    public ResponseEntity<List<User>> getAllUsers() {
         try {
             List<UserEntity> users = userRepository.findAll();
-            List<User> customUsers = new ArrayList<>();
-            users.stream().forEach(e -> {
-                User user = new User();
-                BeanUtils.copyProperties(e, user);
-                customUsers.add(user);
-            });
-            return null;
+            List<User> customUsers = users.stream()
+                    .map(userEntity -> {
+                        User user = new User();
+                        BeanUtils.copyProperties(userEntity, user);
+                        return user;
+                    })
+                    .collect(Collectors.toList());
+            return ResponseEntity.status(HttpStatus.OK).body(customUsers);
         } catch (Exception e) {
-            throw e;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
     // create/add User
-    public String addUser(UserEntity user) {
+    public ResponseEntity<String> addUser(UserEntity user) {
         try {
             if (!userRepository.existsByFirstNameAndLastName(user.getFirstName(), user.getLastName())) {
                 userRepository.save(user);
-                return "User added successfully";
+                return ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"User added successfully\"}");
             } else {
-                return "This user already exists in the database.";
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("{\"error\": \"This user already exists in the database.\"}");
             }
         } catch (Exception e) {
-            throw e;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"error\": \"Internal server error\"}");
         }
     }
 
     // delete User
-    public String removeUser(UserEntity user) {
+    public ResponseEntity<String> removeUser(UserEntity user) {
         try {
             if (userRepository.existsByFirstNameAndLastName(user.getFirstName(), user.getLastName())) {
                 userRepository.delete(user);
-                return "User deleted successfully";
+                return ResponseEntity.status(HttpStatus.OK).body("{'message':'User deleted successfully'}");
             } else {
-                return "User does not exists.";
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{'error':'User does not exist.'}");
             }
         } catch (Exception e) {
-            throw e;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{'error':'Internal server error'}");
         }
     }
 
-    // Update User
-    public String updateUser(UserEntity user) {
+    // update User
+    public ResponseEntity<String> updateUser(UserEntity user) {
         try {
             if (userRepository.existsById(user.getId())) {
                 userRepository.save(user);
-                return "User updated successfully";
+                return ResponseEntity.status(HttpStatus.OK).body("{'message':'User updated successfully'}");
             } else {
-                return "User updating failed.";
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{'error':'User updating failed.'}");
             }
         } catch (Exception e) {
-            throw e;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{'error':'Internal server error'}");
         }
     }
 }

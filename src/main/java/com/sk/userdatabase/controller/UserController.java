@@ -1,16 +1,13 @@
 package com.sk.userdatabase.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import com.sk.userdatabase.entity.UserEntity;
 import com.sk.userdatabase.model.User;
 import com.sk.userdatabase.service.UserService;
+
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -18,23 +15,27 @@ public class UserController {
     @Autowired
     UserService userService;
 
-    @RequestMapping(value = "getallusers", method = RequestMethod.GET)
-    public List<User> getAllusers() {
-        return userService.getAllUsers();
+    @GetMapping("/getallusers")
+    public ResponseEntity<List<User>> getAllUsers() {
+        ResponseEntity<List<User>> reponse = userService.getAllUsers();
+        return ResponseEntity.status(reponse.getStatusCode()).body(reponse.getBody());
     }
 
-    @RequestMapping(value = "adduser", method = RequestMethod.POST)
-    public String addUser(@RequestBody UserEntity user) {
-        return userService.addUser(user);
+    @PostMapping("/adduser")
+    public ResponseEntity<String> addUser(@RequestBody UserEntity user) {
+        ResponseEntity<String> response = userService.addUser(user);
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
-    @RequestMapping(value = "updateuser", method = RequestMethod.PUT)
-    public String updateUser(@RequestBody UserEntity user) {
-        return userService.updateUser(user);
+    @PutMapping("/updateuser")
+    public ResponseEntity<String> updateUser(@RequestBody UserEntity user) {
+        ResponseEntity<String> response = userService.updateUser(user);
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
-    @RequestMapping(value = "deleteuser", method = RequestMethod.DELETE)
-    public String removeUser(@RequestBody UserEntity user) {
-        return userService.removeUser(user);
+    @DeleteMapping("/deleteuser")
+    public ResponseEntity<String> removeUser(@RequestBody UserEntity user) {
+        ResponseEntity<String> response = userService.removeUser(user);
+        return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 }
